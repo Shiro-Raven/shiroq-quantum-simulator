@@ -2,10 +2,10 @@ import cupy as cp
 
 class QuantumRegister():
     # Have a set of common states
-    zero = cp.array([1., 0.])
-    one = cp.array([0.,1.])
-    plus = cp.array([1/cp.sqrt(2), 1/cp.sqrt(2)])
-    minus = cp.array([1/cp.sqrt(2), -1/cp.sqrt(2)])
+    zero = cp.array([1., 0.], dtype='complex')
+    one = cp.array([0.,1.], dtype='complex')
+    plus = cp.array([1/cp.sqrt(2), 1/cp.sqrt(2)], dtype='complex')
+    minus = cp.array([1/cp.sqrt(2), -1/cp.sqrt(2)], dtype='complex')
 
     __one_test = cp.array(1.)
 
