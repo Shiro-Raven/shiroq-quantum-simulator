@@ -107,10 +107,22 @@ class QuantumRegister():
 
         self.__operators_matrix = cp.eye(2 ** self.__size)
 
-    def measure(self, shots):
+    def measure(self, shots, qubits_idx=None):
+        assert qubits_idx is None or isinstance(qubits_idx, list), 'Incorrect way of indexing qubits'
+
+        if qubits_idx == None:
+            qubits_idx = [i for i in range(self.__size)]
         statevector = self.get_statevector()
         values, counts = cp.unique(cp.random.choice(len(statevector), shots, p=cp.absolute(statevector) ** 2), return_counts=True)
         values = list(cp.asnumpy(values))
         values = [format(i, '0' + str(self.__size) + 'b') for i in values]
-        res = dict([i for i in zip(values, list(cp.asnumpy(counts)))])
+        
+        # TODO make this more efficient
+        res = dict()
+        for i, value in enumerate(values):
+            key = ''.join([value[i] for i in qubits_idx])
+            if key in res.keys():
+                res[key] += counts[i].item()
+            else:
+                res[key] = counts[i].item()
         return res

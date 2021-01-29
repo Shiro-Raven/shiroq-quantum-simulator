@@ -20,15 +20,14 @@ reg.add_single_qubit_gate(h_gate, [1])
 reg.add_single_qubit_gate(y_gate, [2])
 #cp.absolute(cp.kron(cp.kron(reg.foo(0), reg.foo(1)), reg.foo(2)) @ reg.get_statevector())
 reg.apply_batch()
+"""
 reg = QuantumRegister(8)
 
-reg.initialise_qubit(7, QuantumRegister.one)
+#reg.initialise_qubit(7, QuantumRegister.one)
 
-cnot = QuantumGate('X', controlled=True)
+h = QuantumGate('H')
 
-reg.add_two_qubit_gate(cnot, 7, 0)
+reg.add_single_qubit_gate(h, [i for i in range(8)])
 reg.apply()
-reg.add_two_qubit_gate(cnot, 7, 0)
-reg.apply()
-"""
+tmp = reg.measure(100, [0, 4, 5])
 breakpoint()
