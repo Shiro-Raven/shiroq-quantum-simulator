@@ -2,7 +2,7 @@ import cupy as cp
 from math import cos, sin
 
 class QuantumGate():
-    __supported_gates = ['I', 'Z', 'X', 'Y', 'H', 'SWAP']
+    __supported_gates = ['i', 'z', 'x', 'y', 'h', 'swap']
     
     __I = cp.eye(2, dtype='complex')
 
@@ -12,44 +12,50 @@ class QuantumGate():
     __H = 1 / cp.sqrt(2) * cp.array([[1., 1.], [1., -1.]], dtype='complex')
     __SWAP = cp.array([[1,0,0,0], [0,0,1,0], [0,1,0,0], [0,0,0,1]], dtype='complex')
 
-    def __init__(self, *inp, controlled=False):
-
+    def __init__(self, *inp):
         assert len(inp) in [1, 2, 4], 'Invalid parameter length. Either pass the gate name, axis and the rotation parameters, or U3 and the angles'
 
+        gate_name = inp[0].lower()
 
+        controlled = True if gate_name[0] == 'c' else False
+        gate_name = gate_name[1:] if gate_name[0] == 'c' else gate_name
+        
         if len(inp) == 1:
-            self.__matrix = self.__get_gate_by_name(inp[0])
+            self.__matrix = self.__get_gate_by_name(gate_name)
         elif len(inp) == 2:
-            self.__matrix = self.__calculate_axis_rotation_matrix(inp[0], inp[1]) 
+            self.__matrix = self.__calculate_axis_rotation_matrix(gate_name, inp[1]) 
         elif len(inp) == 4:
-            self.__matrix = self.__calculate_arbitrary_unitary(inp[0], inp[1], inp[2], inp[3])
+            self.__matrix = self.__calculate_arbitrary_unitary(gate_name, inp[1], inp[2], inp[3])
 
-        if controlled and not (inp[0] == 'SWAP'):
-            self.__matrix = self.__get_controlled_version(self.__matrix)
+        if controlled and not (gate_name == 'swap'):
+            self.__matrix = self.__get_controlled_version()
 
         self.__matrix = cp.around(self.__matrix, 10)
+
+    def is_single_qubit(self):
+        return self.__matrix.shape[0] == 2
 
     def get_matrix(self):
         return self.__matrix
     
     def __get_gate_by_name(self, name):
-        assert name in self.__supported_gates, 'Unsupported non-parametric Gate, supported gates are {}'.format(self.__supported_gates)
+        assert name in self.__supported_gates, 'Unsupported non-parametric Gate {}, supported gates are {}'.format(name, self.__supported_gates)
 
-        if name == 'X':
+        if name == 'x':
             return self.__X
-        elif name == 'Y':
+        elif name == 'y':
             return self.__Y
-        elif name == 'Z':
+        elif name == 'z':
             return self.__Z
-        elif name == 'I':
+        elif name == 'i':
             return self.__I
-        elif name == 'H':
+        elif name == 'h':
             return self.__H
-        elif name == 'SWAP':
+        elif name == 'swap':
             return self.__SWAP
 
     def __calculate_axis_rotation_matrix(self, axis, theta):
-        assert  axis in ['Rx', 'Ry', 'Rz'], 'Invalid axis choice. Can only be [\'Rx\', \'Ry\', \'Rz\']'
+        assert axis in ['rx', 'ry', 'rz'], 'Invalid axis choice. Can only be [\'Rx\', \'Ry\', \'Rz\']'
         assert cp.isreal(theta), 'Theta can not be complex'
 
         axis = axis[-1]
@@ -79,9 +85,9 @@ class QuantumGate():
 
         return cp.array([[cosTheta, -exp_lambda*sinTheta],[exp_phi*sinTheta, exp_lambda*exp_phi*cosTheta]], dtype='complex')
 
-    def __get_controlled_version(self, gate):
+    def __get_controlled_version(self):
         res = cp.identity(4, dtype=complex)
 
-        res[2:4, 2:4] = gate
+        res[2:4, 2:4] = self.get_matrix()
 
         return res 

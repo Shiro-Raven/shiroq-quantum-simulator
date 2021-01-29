@@ -1,0 +1,8 @@
+[
+  { "gate": "h", "target": [0,1] }, 
+  { "gate": "cz", "target": [0, 1] },
+  { "gate": "h", "target": [0,1] },
+  { "gate": "z", "target": [0,1] },  
+  { "gate": "cz", "target": [0, 1] },
+  { "gate": "h", "target": [0,1] }
+]

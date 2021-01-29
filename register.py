@@ -1,4 +1,5 @@
 import cupy as cp
+from gate import QuantumGate
 import utils
 
 class QuantumRegister():
@@ -37,6 +38,25 @@ class QuantumRegister():
     def set_endianness(self, endianness):
         assert endianness in ['big', 'little'], 'Endianness can only be big or little'
         self.__is_big_endian = endianness == 'big'
+
+    def run_program(self, program):
+        assert isinstance(program, list), 'Program must be a list'
+        for instruction in program:
+            if instruction[0][0] == 'c':
+                control, target = instruction[-1]
+            else:
+                target = instruction[-1]
+
+            params = instruction[:-1]
+            
+            gate = QuantumGate(*params)
+
+            if gate.is_single_qubit():
+                self.add_single_qubit_gate(gate, target)
+            else:
+                self.add_two_qubit_gate(gate, control, target)
+        
+        self.apply()
 
     def __appropriate_index(self, index):
         return index if self.__is_big_endian else self.__size - index - 1
@@ -83,9 +103,12 @@ class QuantumRegister():
 
         gate = gate.get_matrix()
 
-        tmp = cp.tile(cp.eye(2, dtype='complex'), (self.__size - 2, 1)).reshape(-1, 2, 2)
-        tmp = utils.tensor_product_matrix_list(tmp)
-        tmp = cp.kron(gate, tmp)
+        if self.__size > 2:
+            tmp = cp.tile(cp.eye(2, dtype='complex'), (self.__size - 2, 1)).reshape(-1, 2, 2)
+            tmp = utils.tensor_product_matrix_list(tmp)
+            tmp = cp.kron(gate, tmp)
+        else: 
+            tmp = gate
 
         control = self.__appropriate_index(control)
         target = self.__appropriate_index(target)
