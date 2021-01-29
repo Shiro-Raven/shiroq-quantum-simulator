@@ -10,10 +10,11 @@ class QuantumRegister():
 
     __one_test = cp.array(1.)
 
-    def __init__(self, size):
+    def __init__(self, size, endianness='big'):
         assert size < 26, 'Maximum allowed qubits is 25'
         assert size > 0, 'Can not have empty register'
 
+        self.set_endianness(endianness)
         self.__size = size
 
         # Needed for efficiency purposes
@@ -33,10 +34,19 @@ class QuantumRegister():
     def get_register_size(self):
         return self.__size
 
+    def set_endianness(self, endianness):
+        assert endianness in ['big', 'little'], 'Endianness can only be big or little'
+        self.__is_big_endian = endianness == 'big'
+
+    def __appropriate_index(self, index):
+        return index if self.__is_big_endian else self.__size - index - 1
+
     def initialise_qubit(self, index, state):
         assert not self.__initialised, 'Can not set states after adding a gate'
         assert index < self.__size, 'Qubit not in register'
         cp.testing.assert_array_equal(cp.around(cp.sum(cp.absolute(state) ** 2)), self.__one_test, 'Non-quantum mechanical state', False)
+
+        index = self.appropriate_index(index)
 
         self.__dirty = True 
         self.__qubits[index] = state
@@ -57,9 +67,11 @@ class QuantumRegister():
         gate = gate.get_matrix()
 
         for target in targets:
+            target = self.__appropriate_index(target)
             self.__gate_cache[target] = gate @ self.__gate_cache[target] 
 
         self.__unapplied_gates = True
+        self.__opmatrix_calculated = False
         self.__initialised = True
 
 
@@ -74,6 +86,9 @@ class QuantumRegister():
         tmp = cp.tile(cp.eye(2, dtype='complex'), (self.__size - 2, 1)).reshape(-1, 2, 2)
         tmp = utils.tensor_product_matrix_list(tmp)
         tmp = cp.kron(gate, tmp)
+
+        control = self.__appropriate_index(control)
+        target = self.__appropriate_index(target)
 
         gate = utils.reorder_gate(tmp, control, target, self.__size)
         
@@ -109,9 +124,10 @@ class QuantumRegister():
 
     def measure(self, shots, qubits_idx=None):
         assert qubits_idx is None or isinstance(qubits_idx, list), 'Incorrect way of indexing qubits'
-
         if qubits_idx == None:
-            qubits_idx = [i for i in range(self.__size)]
+            qubits_idx = [self.__appropriate_index(i) for i in range(self.__size)]
+        assert max(qubits_idx) < self.__size or min(qubits_idx) >= 0, 'Some qubits not in register'
+
         statevector = self.get_statevector()
         values, counts = cp.unique(cp.random.choice(len(statevector), shots, p=cp.absolute(statevector) ** 2), return_counts=True)
         values = list(cp.asnumpy(values))
