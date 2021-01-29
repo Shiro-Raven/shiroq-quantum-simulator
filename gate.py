@@ -2,7 +2,7 @@ import cupy as cp
 from math import cos, sin
 
 class QuantumGate():
-    __supported_gates = ['I', 'Z', 'X', 'Y', 'H']
+    __supported_gates = ['I', 'Z', 'X', 'Y', 'H', 'SWAP']
     
     __I = cp.eye(2, dtype='complex')
 
@@ -10,6 +10,7 @@ class QuantumGate():
     __Z = cp.array([[1., 0.], [0., -1.]], dtype='complex')
     __Y = cp.array([[0, -1.j],[1.j, 0]], dtype='complex')
     __H = 1 / cp.sqrt(2) * cp.array([[1., 1.], [1., -1.]], dtype='complex')
+    __SWAP = cp.array([[1,0,0,0], [0,0,1,0], [0,1,0,0], [0,0,0,1]], dtype='complex')
 
     def __init__(self, *inp, controlled=False):
 
@@ -23,11 +24,11 @@ class QuantumGate():
         elif len(inp) == 4:
             self.__matrix = self.__calculate_arbitrary_unitary(inp[0], inp[1], inp[2], inp[3])
 
-        if controlled:
+        if controlled and not (inp[0] == 'SWAP'):
             self.__matrix = self.__get_controlled_version(self.__matrix)
 
         self.__matrix = cp.around(self.__matrix, 10)
-        
+
     def get_matrix(self):
         return self.__matrix
     
@@ -44,6 +45,8 @@ class QuantumGate():
             return self.__I
         elif name == 'H':
             return self.__H
+        elif name == 'SWAP':
+            return self.__SWAP
 
     def __calculate_axis_rotation_matrix(self, axis, theta):
         assert  axis in ['Rx', 'Ry', 'Rz'], 'Invalid axis choice. Can only be [\'Rx\', \'Ry\', \'Rz\']'
