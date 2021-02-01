@@ -1,6 +1,7 @@
 import cupy as cp
 from gate import QuantumGate
 import utils
+import math
 
 import warnings
 
@@ -20,6 +21,9 @@ class QuantumRegister():
         self.set_endianness(endianness)
         self.__size = size
 
+        self.reset()
+
+    def reset(self):
         # Needed for efficiency purposes
         self.__dirty = True
         self.__unapplied_gates = False
@@ -29,10 +33,11 @@ class QuantumRegister():
         self.__initialised = False
 
         # initialise all states to zero
-        self.__qubits = cp.stack([self.zero] * size, axis = 0)
+        self.__qubits = cp.stack([self.zero] * self.__size, axis = 0)
 
         self.__gate_cache = cp.tile(cp.eye(2, dtype='complex'), (self.__size, 1)).reshape(-1, 2, 2)
-        self.__operators_matrix = cp.eye(2 ** size)
+        self.__operators_matrix = cp.eye(2 ** self.__size)
+
 
     def get_register_size(self):
         return self.__size
@@ -46,21 +51,14 @@ class QuantumRegister():
 
     def run_program(self, program):
         assert isinstance(program, list), 'Program must be a list'
+        
         for instruction in program:
             params = instruction[:-1]
             
             gate = QuantumGate(*params)
 
-            if gate.is_single_qubit():
-                target = instruction[-1]
-                self.add_single_qubit_gate(gate, target)
-            elif gate.is_two_qubits():
-                control, target = instruction[-1]
-                self.add_two_qubit_gate(gate, control, target)
-            else:
-                one, two, three = instruction[-1]
-                self.add_three_qubit_gate(gate, one, two, three)
-        
+            self.add_gate(gate, instruction[-1])
+
         self.apply()
 
     def __appropriate_index(self, index):
@@ -85,76 +83,52 @@ class QuantumRegister():
 
         return self.__statevector
 
-
-    def add_single_qubit_gate(self, gate, targets):
-        assert max(targets) < self.__size or min(targets) >= 0, 'Some qubits not in register'
+    def add_gate(self, gate, targets):
+        self.__do_assertions(gate, targets)
 
         gate = gate.get_matrix()
 
-        for target in targets:
-            target = self.__appropriate_index(target)
-            self.__gate_cache[target] = gate @ self.__gate_cache[target] 
+        #breakpoint()
+
+        for i in range(len(targets)):
+            targets[i] =  self.__appropriate_index(targets[i])
+
+        #breakpoint()
+
+        affected_qubits = int(math.log(gate.shape[0], 2))
+        ############################################
+        if affected_qubits == 1:
+            for target in targets:
+                target = self.__appropriate_index(target)
+                self.__gate_cache[target] = gate @ self.__gate_cache[target]
+            self.__opmatrix_calculated = False
+        else:
+            if self.__size > affected_qubits:
+                tmp = cp.tile(cp.eye(2, dtype='complex'), (self.__size - affected_qubits, 1)).reshape(-1, 2, 2)
+                tmp = utils.tensor_product_matrix_list(tmp)
+                tmp = cp.kron(gate, tmp)
+            else:
+                tmp = gate
+
+            gate = utils.reorder_gate(tmp, self.__size, self.__is_big_endian, *targets)
+
+            ops_matrix = self.__calculate_operators_product()
+
+            self.__operators_matrix = gate @ ops_matrix
+        ############################################
 
         self.__unapplied_gates = True
-        self.__opmatrix_calculated = False
         self.__initialised = True
 
-
-    def add_two_qubit_gate(self, gate, control, target):
-        assert self.__size > 1, 'Can not have controlled gate in one qubit system'
-        assert target < self.__size, 'Target qubit not in register'
-        assert control < self.__size, 'Control qubit not in register'
-        assert control != target, 'control and target must be different'
-
-        gate = gate.get_matrix()
-
-        if self.__size > 2:
-            tmp = cp.tile(cp.eye(2, dtype='complex'), (self.__size - 2, 1)).reshape(-1, 2, 2)
-            tmp = utils.tensor_product_matrix_list(tmp)
-            tmp = cp.kron(gate, tmp)
-        else: 
-            tmp = gate
-
-        control = self.__appropriate_index(control)
-        target = self.__appropriate_index(target)
-
-        gate = utils.reorder_gate(tmp, control, target, self.__size)
+    def __do_assertions(self, gate, targets):
+        assert all([target < self.__size for target in targets]), 'Some qubits not in register'
+        assert len(targets) == len(set(targets)), 'All target qubits must be different!'
         
-        ops_matrix = self.__calculate_operators_product()
-
-        self.__operators_matrix = gate @ ops_matrix
-
-        self.__unapplied_gates = True
-        self.__initialised = True
-
-    def add_three_qubit_gate(self, gate, one, two, three):
-        assert self.__size > 2, 'Can not have three-qubit gate in one/two qubit system'
-        assert one < self.__size, 'First qubit not in register'
-        assert two < self.__size, 'Second qubit not in register'
-        assert three < self.__size, 'Third qubit not in register'
-        assert one != two and two != three and one != three, 'all qubits must be different'
-
-        gate = gate.get_matrix()
+        affected_qubits = int(math.log(gate.get_matrix().shape[0], 2))
+        assert affected_qubits <= self.__size, 'Gate too big for circuit'
         
-        if self.__size > 3:
-            tmp = cp.tile(cp.eye(2, dtype='complex'), (self.__size - 3, 1)).reshape(-1, 2, 2)
-            tmp = utils.tensor_product_matrix_list(tmp)
-            tmp = cp.kron(gate, tmp)
-        else: 
-            tmp = gate
-
-        one = self.__appropriate_index(one)
-        two = self.__appropriate_index(two)
-        three = self.__appropriate_index(three)
-
-        gate = utils.reorder_gate_three(tmp, one, two, three, self.__size)
-
-        ops_matrix = self.__calculate_operators_product()
-
-        self.__operators_matrix = gate @ ops_matrix
-
-        self.__unapplied_gates = True
-        self.__initialised = True
+        if affected_qubits > 1:
+            assert affected_qubits == len(targets), 'Too many/too few arguments for target qubits'
 
     def __calculate_operators_product(self):
         if not self.__opmatrix_calculated:

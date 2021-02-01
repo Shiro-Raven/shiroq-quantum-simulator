@@ -2,7 +2,7 @@ import cupy as cp
 from math import cos, sin
 
 class QuantumGate():
-    __supported_gates = ['i', 'z', 'x', 'y', 'h', 'swap']
+    __supported_gates = ['i', 'z', 'x', 'y', 'h', 'swap', 'cx']
     
     __I = cp.eye(2, dtype='complex')
 

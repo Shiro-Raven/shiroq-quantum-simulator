@@ -32,35 +32,27 @@ def tensor_product_matrix_list(matrix_list):
     
     return tmp
 
-def reorder_gate(G, new_control, new_target, circuit_length):
+def reorder_gate(G, circuit_length, is_big_endian, *new_targets):
     perm = [-1] * circuit_length
 
-    perm[new_control] = 0
-    perm[new_target] = 1
+    #breakpoint()
 
-    counter = 2
+    counter = 0
+    for target in new_targets:
+        if is_big_endian:
+            idx = target
+        else:
+            idx = circuit_length - target - 1
+        
+        perm[idx] = counter
+        counter += 1
+
     for _ in range(circuit_length):
         if perm[_] == -1:
             perm[_] = counter
             counter += 1
 
-    # reorder both input and output dimensions
-    perm2 = perm + [circuit_length + i for i in perm]
-    
-    return cp.reshape(cp.transpose(cp.reshape(G, 2*circuit_length*[2]), perm2), (2**circuit_length, 2**circuit_length))
-
-def reorder_gate_three(G, new_one, new_two, new_three, circuit_length):
-    perm = [-1] * circuit_length
-
-    perm[new_one] = 0
-    perm[new_two] = 1
-    perm[new_three] = 2
-
-    counter = 2
-    for _ in range(circuit_length):
-        if perm[_] == -1:
-            perm[_] = counter
-            counter += 1
+    #breakpoint()
 
     # reorder both input and output dimensions
     perm2 = perm + [circuit_length + i for i in perm]
