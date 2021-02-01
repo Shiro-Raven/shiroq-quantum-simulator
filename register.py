@@ -2,6 +2,8 @@ import cupy as cp
 from gate import QuantumGate
 import utils
 
+import warnings
+
 class QuantumRegister():
     # Have a set of common states
     zero = cp.array([1., 0.], dtype='complex')
@@ -39,22 +41,25 @@ class QuantumRegister():
         assert endianness in ['big', 'little'], 'Endianness can only be big or little'
         self.__is_big_endian = endianness == 'big'
 
+    def get_endianness(self):
+        return 'big' if self.__is_big_endian else 'little'
+
     def run_program(self, program):
         assert isinstance(program, list), 'Program must be a list'
         for instruction in program:
-            if instruction[0][0] == 'c':
-                control, target = instruction[-1]
-            else:
-                target = instruction[-1]
-
             params = instruction[:-1]
             
             gate = QuantumGate(*params)
 
             if gate.is_single_qubit():
+                target = instruction[-1]
                 self.add_single_qubit_gate(gate, target)
-            else:
+            elif gate.is_two_qubits():
+                control, target = instruction[-1]
                 self.add_two_qubit_gate(gate, control, target)
+            else:
+                one, two, three = instruction[-1]
+                self.add_three_qubit_gate(gate, one, two, three)
         
         self.apply()
 
@@ -66,7 +71,7 @@ class QuantumRegister():
         assert index < self.__size, 'Qubit not in register'
         cp.testing.assert_array_equal(cp.around(cp.sum(cp.absolute(state) ** 2)), self.__one_test, 'Non-quantum mechanical state', False)
 
-        index = self.appropriate_index(index)
+        index = self.__appropriate_index(index)
 
         self.__dirty = True 
         self.__qubits[index] = state
@@ -121,7 +126,35 @@ class QuantumRegister():
 
         self.__unapplied_gates = True
         self.__initialised = True
+
+    def add_three_qubit_gate(self, gate, one, two, three):
+        assert self.__size > 2, 'Can not have three-qubit gate in one/two qubit system'
+        assert one < self.__size, 'First qubit not in register'
+        assert two < self.__size, 'Second qubit not in register'
+        assert three < self.__size, 'Third qubit not in register'
+        assert one != two and two != three and one != three, 'all qubits must be different'
+
+        gate = gate.get_matrix()
         
+        if self.__size > 3:
+            tmp = cp.tile(cp.eye(2, dtype='complex'), (self.__size - 3, 1)).reshape(-1, 2, 2)
+            tmp = utils.tensor_product_matrix_list(tmp)
+            tmp = cp.kron(gate, tmp)
+        else: 
+            tmp = gate
+
+        one = self.__appropriate_index(one)
+        two = self.__appropriate_index(two)
+        three = self.__appropriate_index(three)
+
+        gate = utils.reorder_gate_three(tmp, one, two, three, self.__size)
+
+        ops_matrix = self.__calculate_operators_product()
+
+        self.__operators_matrix = gate @ ops_matrix
+
+        self.__unapplied_gates = True
+        self.__initialised = True
 
     def __calculate_operators_product(self):
         if not self.__opmatrix_calculated:
@@ -150,6 +183,9 @@ class QuantumRegister():
         if qubits_idx == None:
             qubits_idx = [self.__appropriate_index(i) for i in range(self.__size)]
         assert max(qubits_idx) < self.__size or min(qubits_idx) >= 0, 'Some qubits not in register'
+
+        if self.__unapplied_gates:
+            warnings.warn('Some gates are not applied yet! Call QuantumRegister.apply()')
 
         statevector = self.get_statevector()
         values, counts = cp.unique(cp.random.choice(len(statevector), shots, p=cp.absolute(statevector) ** 2), return_counts=True)

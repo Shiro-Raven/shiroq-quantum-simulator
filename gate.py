@@ -27,13 +27,16 @@ class QuantumGate():
         elif len(inp) == 4:
             self.__matrix = self.__calculate_arbitrary_unitary(gate_name, inp[1], inp[2], inp[3])
 
-        if controlled and not (gate_name == 'swap'):
+        if controlled:
             self.__matrix = self.__get_controlled_version()
 
         self.__matrix = cp.around(self.__matrix, 10)
 
     def is_single_qubit(self):
         return self.__matrix.shape[0] == 2
+
+    def is_two_qubits(self):
+        return self.__matrix.shape[0] == 4
 
     def get_matrix(self):
         return self.__matrix
@@ -53,6 +56,9 @@ class QuantumGate():
             return self.__H
         elif name == 'swap':
             return self.__SWAP
+        elif name == 'cx':
+            self.__matrix = self.__X
+            return self.__get_controlled_version()
 
     def __calculate_axis_rotation_matrix(self, axis, theta):
         assert axis in ['rx', 'ry', 'rz'], 'Invalid axis choice. Can only be [\'Rx\', \'Ry\', \'Rz\']'
@@ -86,8 +92,11 @@ class QuantumGate():
         return cp.array([[cosTheta, -exp_lambda*sinTheta],[exp_phi*sinTheta, exp_lambda*exp_phi*cosTheta]], dtype='complex')
 
     def __get_controlled_version(self):
-        res = cp.identity(4, dtype=complex)
-
-        res[2:4, 2:4] = self.get_matrix()
+        if self.is_single_qubit():
+            res = cp.identity(4, dtype=complex)
+            res[2:4, 2:4] = self.get_matrix()
+        elif self.is_two_qubits():
+            res = cp.identity(8, dtype=complex)
+            res[4:8, 4:8] = self.get_matrix()
 
         return res 

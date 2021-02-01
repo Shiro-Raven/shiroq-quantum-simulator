@@ -1,4 +1,4 @@
 [
-  { "gate": "h", "target": [0,1] }, 
+  { "gate": "h", "target": [0] }, 
   { "gate": "cx", "target": [0, 1] }
 ]
