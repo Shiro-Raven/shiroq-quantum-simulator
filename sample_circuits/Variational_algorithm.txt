@@ -1,0 +1,3 @@
+[
+    { "gate": "u3", "params": { "theta": "global_1", "phi": "global_2", "lambda": -3.1415 }, "target": [0] }
+]

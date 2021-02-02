@@ -5,7 +5,7 @@ import cupy as cp
 import parser
 
 
-reg = QuantumRegister(3)
+reg = QuantumRegister(1)
 
 reg.set_endianness('little')
 
@@ -14,10 +14,10 @@ reg.set_endianness('little')
 
 breakpoint()
 
-prog = parser.parse_program('./sample_circuits/Simple_grover.txt')
+prog = parser.parse_program('./sample_circuits/Variational_algorithm.txt')
 
 #prog = parser.parse_program('./sample_circuits/Fredkin_gate.txt')
 
-reg.run_program(prog)
+reg.run_program(prog, { "global_1": 3.1415, "global_2": 1.5708 })
 
 breakpoint()

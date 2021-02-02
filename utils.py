@@ -35,8 +35,6 @@ def tensor_product_matrix_list(matrix_list):
 def reorder_gate(G, circuit_length, is_big_endian, *new_targets):
     perm = [-1] * circuit_length
 
-    #breakpoint()
-
     counter = 0
     for target in new_targets:
         if is_big_endian:
@@ -51,8 +49,6 @@ def reorder_gate(G, circuit_length, is_big_endian, *new_targets):
         if perm[_] == -1:
             perm[_] = counter
             counter += 1
-
-    #breakpoint()
 
     # reorder both input and output dimensions
     perm2 = perm + [circuit_length + i for i in perm]

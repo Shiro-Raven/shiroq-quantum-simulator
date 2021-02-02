@@ -79,7 +79,7 @@ class QuantumGate():
 
 
     def __calculate_arbitrary_unitary(self, name, theta, phi, lamda):
-        assert name == 'U3', 'Wrong gate name. should be U3'
+        assert name == 'u3', 'Wrong gate name. should be U3'
         assert cp.isreal(theta), 'Theta is not real'
         assert cp.isreal(phi), 'Phi is not real'
         assert cp.isreal(lamda), 'Lambda is not real'

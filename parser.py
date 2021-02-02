@@ -1,4 +1,3 @@
-
 def parse_program(file_path):
     # Open the file containing the program
     program_file = open(file_path, "r")

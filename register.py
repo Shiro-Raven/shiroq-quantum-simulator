@@ -1,8 +1,9 @@
 import cupy as cp
+
 from gate import QuantumGate
 import utils
-import math
 
+import math
 import warnings
 
 class QuantumRegister():
@@ -49,11 +50,18 @@ class QuantumRegister():
     def get_endianness(self):
         return 'big' if self.__is_big_endian else 'little'
 
-    def run_program(self, program):
+    def run_program(self, program, global_params=None):
         assert isinstance(program, list), 'Program must be a list'
         
         for instruction in program:
             params = instruction[:-1]
+
+            # Replace the global parameters
+            for i in range(1, len(params)):
+                if isinstance(params[i], str):
+                    assert params[i] in global_params.keys(), 'Global parameter not provided!'
+
+                    params[i] = global_params[params[i]]
             
             gate = QuantumGate(*params)
 
@@ -88,12 +96,8 @@ class QuantumRegister():
 
         gate = gate.get_matrix()
 
-        #breakpoint()
-
         for i in range(len(targets)):
             targets[i] =  self.__appropriate_index(targets[i])
-
-        #breakpoint()
 
         affected_qubits = int(math.log(gate.shape[0], 2))
         ############################################
