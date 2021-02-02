@@ -1,12 +1,18 @@
-def parse_program(file_path):
-    # Open the file containing the program
-    program_file = open(file_path, "r")
+def parse_program(program):
+    if isinstance(program, str):
+        # Open the file containing the program
+        program = open(program, "r")
 
-    # Evaluate to a list of dicts
-    program_list = program_file.readlines()
-    program_list = ''.join(program_list).replace('\n', '')
-    program_list = eval(program_list)
+        # Evaluate to a list of dicts
+        program = program.readlines()
+        program = ''.join(program).replace('\n', '')
+        program = eval(program)
 
+    assert isinstance(program, list), 'Only can read a list of dicts'
+
+    return parse_list(program)
+
+def parse_list(program_list):
     # Transform dicts to parameters
     params = list()
     for instruction in program_list:
