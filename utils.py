@@ -1,14 +1,22 @@
-import cupy as cp
+try:
+    import cupy as np
+except ModuleNotFoundError:
+    try:
+        import numpy as np
+    except ModuleNotFoundError:
+        print('Neither Cupy nor NumPy are installed')
+
+import matplotlib.pyplot as plt
 
 def create_state(psi, phi, theta):
-    phase = cp.exp(psi*1.j)
+    phase = np.exp(psi*1.j)
 
-    cos = cp.cos(theta / 2)
-    sin = cp.sin(theta / 2)
+    cos = np.cos(theta / 2)
+    sin = np.sin(theta / 2)
 
-    active_phase = cp.exp(phi*1.j)
+    active_phase = np.exp(phi*1.j)
 
-    return phase * cp.array([cos, active_phase * sin])
+    return phase * np.array([cos, active_phase * sin])
 
 def tensor_product_vector_list(vector_list):
     if len(vector_list) > 1:
@@ -25,10 +33,10 @@ def tensor_product_matrix_list(matrix_list):
     if len(matrix_list) == 1:
         tmp = matrix_list[0]
     else:
-        tmp = cp.kron(matrix_list[0], matrix_list[1])
+        tmp = np.kron(matrix_list[0], matrix_list[1])
 
         for i in range(2, len(matrix_list)):
-                tmp = cp.kron(tmp, matrix_list[i])
+                tmp = np.kron(tmp, matrix_list[i])
     
     return tmp
 
@@ -53,4 +61,10 @@ def reorder_gate(G, circuit_length, is_big_endian, *new_targets):
     # reorder both input and output dimensions
     perm2 = perm + [circuit_length + i for i in perm]
     
-    return cp.reshape(cp.transpose(cp.reshape(G, 2*circuit_length*[2]), perm2), (2**circuit_length, 2**circuit_length))
+    return np.reshape(np.transpose(np.reshape(G, 2*circuit_length*[2]), perm2), (2**circuit_length, 2**circuit_length))
+
+def plot_counts(counts):
+    assert isinstance(counts, dict), 'Must be a dict of counts!'
+    assert len(counts.keys()) > 0, 'Dict is empty!'
+
+    plt.bar(counts.keys(), counts.values(), 0.75, color='g')
