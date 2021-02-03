@@ -9,13 +9,17 @@ except ModuleNotFoundError:
 from math import cos, sin
 
 class QuantumGate():
-    __supported_gates = ['i', 'z', 'x', 'y', 'h', 'swap', 'cx']
+    __supported_gates = ['i', 'z', 'x', 'y', 'h', 'swap', 'cx', 's', 't']
     
     __I = np.eye(2, dtype='complex')
 
     __X = np.array([[0., 1.], [1., 0.]], dtype='complex')
     __Z = np.array([[1., 0.], [0., -1.]], dtype='complex')
     __Y = np.array([[0, -1.j],[1.j, 0]], dtype='complex')
+
+    __S = np.array([[1, 0],[0, 1.j]], dtype='complex')
+    __T = np.array([[1, 0],[0, np.exp(-1.j*np.pi/4)]], dtype='complex')
+
     __H = 1 / np.sqrt(2) * np.array([[1., 1.], [1., -1.]], dtype='complex')
     __SWAP = np.array([[1,0,0,0], [0,0,1,0], [0,1,0,0], [0,0,0,1]], dtype='complex')
 
@@ -59,6 +63,10 @@ class QuantumGate():
             return self.__Z
         elif name == 'i':
             return self.__I
+        elif name == 's':
+            return self.__S
+        elif name == 't':
+            return self.__T
         elif name == 'h':
             return self.__H
         elif name == 'swap':
