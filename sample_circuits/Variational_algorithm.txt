@@ -1,3 +1,8 @@
-[
-    { "gate": "u3", "params": { "theta": "global_1", "phi": "global_2", "lambda": -3.1415 }, "target": [0] }
+[   
+    { "gate": "h", "target": [0, 2] },
+    { "gate": "rz", "params": { "theta": "global_1"}, "target": [1] },
+    { "gate": "ry", "params": { "theta": "global_2"}, "target": [1] },
+    { "gate": "rz", "params": { "theta": "global_3"}, "target": [1] },
+    {"gate":"cswap", "target": [0, 1, 2]},
+    { "gate": "h", "target": [0] }
 ]

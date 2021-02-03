@@ -3,8 +3,9 @@ This is a simple quantum computer simulator implemented in Python as the screeni
 
 ## Pre-requisites
 - [NumPy](https://numpy.org/)
-- [CuPy](https://cupy.dev/) (Optional, needed for GPU acceleration)
 - [Matplotlib](https://matplotlib.org/)
+- [CuPy](https://cupy.dev/) (Optional, needed for GPU acceleration)
+- [SciPy](https://www.scipy.org/scipylib/index.html) (Suggested for variational quantum algorithms, using its ```optimize```)
 
 ## Features
 - Support for most common single-qubit quantum gates, as well as the Toffoli and Swap gates, along with their controlled versions.
