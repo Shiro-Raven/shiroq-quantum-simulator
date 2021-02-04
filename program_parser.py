@@ -20,9 +20,14 @@ def parse_list(program_list):
         
         instr_params.append(instruction['gate'])
 
-        if instruction['gate'].lower() in ['rx', 'ry', 'rz']:
+        if instruction['gate'][0] == 'c':
+            tmp = instruction['gate'][1:]
+        else:
+            tmp = instruction['gate']
+
+        if tmp.lower() in ['rx', 'ry', 'rz', 'rot']:
             instr_params.append(instruction['params']['theta'])
-        elif instruction['gate'].lower() == 'u3':
+        elif tmp.lower() == 'u3':
             instr_params.append(instruction['params']['theta'])
             instr_params.append(instruction['params']['phi'])
             instr_params.append(instruction['params']['lambda'])

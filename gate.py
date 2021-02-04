@@ -18,7 +18,7 @@ class QuantumGate():
     __Y = np.array([[0, -1.j],[1.j, 0]], dtype='complex')
 
     __S = np.array([[1, 0],[0, 1.j]], dtype='complex')
-    __T = np.array([[1, 0],[0, np.exp(-1.j*np.pi/4)]], dtype='complex')
+    __T = np.array([[1, 0],[0, np.exp(1.j*np.pi/4)]], dtype='complex')
 
     __H = 1 / np.sqrt(2) * np.array([[1., 1.], [1., -1.]], dtype='complex')
     __SWAP = np.array([[1,0,0,0], [0,0,1,0], [0,1,0,0], [0,0,0,1]], dtype='complex')
@@ -76,7 +76,7 @@ class QuantumGate():
             return self.__get_controlled_version()
 
     def __calculate_axis_rotation_matrix(self, axis, theta):
-        assert axis in ['rx', 'ry', 'rz'], 'Invalid axis choice. Can only be [\'Rx\', \'Ry\', \'Rz\']'
+        assert axis in ['rx', 'ry', 'rz', 'rot'], 'Invalid axis choice. Can only be [\'Rx\', \'Ry\', \'Rz\', \'ROT\']'
         assert np.isreal(theta), 'Theta can not be complex'
 
         axis = axis[-1]
@@ -89,8 +89,10 @@ class QuantumGate():
                 return np.array([[cosTheta, -1.j*sinTheta],[-1.j*sinTheta, cosTheta]], dtype='complex')
             else:
                 return np.array([[cosTheta, -sinTheta],[sinTheta, cosTheta]], dtype='complex')
-        else:
+        elif axis == 'z':
             return np.array([[np.exp(-1.j*theta / 2), 0],[0, np.exp(1.j*theta / 2)]], dtype='complex')
+        else:
+            return np.array([[1, 0],[0, np.exp(1.j*theta)]], dtype='complex')
 
 
     def __calculate_arbitrary_unitary(self, name, theta, phi, lamda):

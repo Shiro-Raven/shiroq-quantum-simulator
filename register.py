@@ -56,9 +56,12 @@ class QuantumRegister():
     def get_endianness(self):
         return 'big' if self.__is_big_endian else 'little'
 
-    def run_program(self, program, global_params=None):
+    def run_program(self, program, global_params=None, reversed=False):
         assert isinstance(program, list), 'Program must be a list'
-        
+
+        if reversed:
+            program.reverse()
+
         for instruction in program:
             params = instruction[:-1]
 
@@ -164,8 +167,12 @@ class QuantumRegister():
 
     def measure(self, shots, qubits_idx=None):
         assert qubits_idx is None or isinstance(qubits_idx, list), 'Incorrect way of indexing qubits'
+        
         if qubits_idx == None:
             qubits_idx = [self.__appropriate_index(i) for i in range(self.__size)]
+        else:
+            qubits_idx = [self.__appropriate_index(i) for i in qubits_idx]
+
         assert max(qubits_idx) < self.__size or min(qubits_idx) >= 0, 'Some qubits not in register'
 
         if self.__unapplied_gates:
@@ -173,7 +180,10 @@ class QuantumRegister():
 
         statevector = self.get_statevector()
         values, counts = np.unique(np.random.choice(len(statevector), shots, p=np.absolute(statevector) ** 2), return_counts=True)
-        values = list(np.asnumpy(values))
+        try:
+            values = list(np.asnumpy(values))
+        except: 
+            values = list(values)
         values = [format(i, '0' + str(self.__size) + 'b') for i in values]
         
         # TODO make this more efficient
