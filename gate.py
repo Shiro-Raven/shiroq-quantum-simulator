@@ -27,12 +27,16 @@ class QuantumGate():
         gate_name = gate_name[1:] if gate_name[0] == 'c' else gate_name
         
         if len(inp) == 1:
+            # Non-parametric gates
             self.__matrix = self.__get_gate_by_name(gate_name)
         elif len(inp) == 2:
+            # Rx, Ry, and Rz gates, as well as the phase gate
             self.__matrix = self.__calculate_axis_rotation_matrix(gate_name, inp[1]) 
         elif len(inp) == 4:
+            # U3 gate
             self.__matrix = self.__calculate_arbitrary_unitary(gate_name, inp[1], inp[2], inp[3])
 
+        # If a controlled gate is needed, generate the controlled matrix
         if controlled:
             self.__matrix = self.__get_controlled_version()
 
@@ -76,6 +80,7 @@ class QuantumGate():
 
         axis = axis[-1]
 
+        # Textbook definition of the matrices
         if axis in ['x', 'y']:
             cosTheta = cos(theta / 2)
             sinTheta = sin(theta / 2)

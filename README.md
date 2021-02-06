@@ -1,4 +1,4 @@
-# ShiroQ Quantum Computer Simulator :cyclone:
+# :boom: ShiroQ Quantum Computer Simulator :cyclone:
 This is a simple quantum computer simulator implemented in Python as the screening task for [QOSF](https://qosf.org/)'s Quantum Computing Mentorship Program.
 
 ## Pre-requisites
@@ -13,6 +13,15 @@ This is a simple quantum computer simulator implemented in Python as the screeni
 - Ability to run variational quantum algorithms.
 
 Examples can be found in the __notebooks__ folder.
+
+## Components
+
+The simulator consists of the following components:
+
+- ``register.py``: This is where most of the magic happens. This file contains the ``QuantumRegister`` class which contains most of the simulators logic.
+- ``gate.py``: This file is responsible for creating reusable instances of all supported gates that can be added to your quantum register, using the ``QuantumGate`` class. 
+- ``program_parser.py``: This file contains the logic for parsing a program as detailed in the explanation of the task, and compiling the parameters needed for runnning that program in our ``QuantumRegister``.
+- ``utils.py``: This file contains some helper functions for calculating tensor products, reordering the wiring of a quantum gate, and creating an arbitrary state from Bloch sphere angles with a global phase, and plotting counts.
 
 ## Usage
 - Manual Circuit Building
