@@ -122,7 +122,7 @@ dependency_graph = {
 
 dependency_graph = defaultdict(lambda: [], dependency_graph)
 
-def list_to_qasm(list, circuit_size, filename: str):
+def list_to_qasm(list, circuit_size, filename: str, qubits_to_measure=None):
     if filename.endswith('.qasm'):
         filename = filename[:-len('.qasm')]
 
@@ -139,6 +139,9 @@ def list_to_qasm(list, circuit_size, filename: str):
 
     ops = 'qreg q[{}];\n'.format(circuit_size)
 
+    if qubits_to_measure is not None:
+        ops += 'creg c[{}];\n'.format(len(qubits_to_measure))
+
     for gate, qubit_idx in list:
         add_dependencies(gate.name, added_deps, file)
         if gate.name not in added_deps:
@@ -152,6 +155,10 @@ def list_to_qasm(list, circuit_size, filename: str):
         else:
             for qubit in qubit_idx:
                 ops += '{}{} q[{}];\n'.format(gate.name, params, qubit)
+
+    if qubits_to_measure is not None:
+        for idx, qubit in enumerate(qubits_to_measure):
+            ops += 'measure q[{}] -> c[{}];;\n'.format(qubit, idx)
 
     file.write(ops)
 
