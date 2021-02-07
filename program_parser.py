@@ -25,7 +25,7 @@ def parse_list(program_list):
         else:
             tmp = instruction['gate']
 
-        if tmp.lower() in ['rx', 'ry', 'rz', 'rot']:
+        if tmp.lower() in ['rx', 'ry', 'rz', 'u1']:
             instr_params.append(instruction['params']['theta'])
         elif tmp.lower() == 'u3':
             instr_params.append(instruction['params']['theta'])

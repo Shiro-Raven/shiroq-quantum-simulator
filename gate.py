@@ -63,13 +63,13 @@ class QuantumGate():
         elif name == 'y':
             return self.__Y
         elif name == 'z':
-            return self.__calculate_axis_rotation_matrix('rot', pi)
+            return self.__calculate_axis_rotation_matrix('u1', pi)
         elif name == 'i':
-            return self.__calculate_axis_rotation_matrix('rot', 0)
+            return self.__calculate_axis_rotation_matrix('u1', 0)
         elif name == 's':
-            return self.__calculate_axis_rotation_matrix('rot', pi / 2)
+            return self.__calculate_axis_rotation_matrix('u1', pi / 2)
         elif name == 't':
-            return self.__calculate_axis_rotation_matrix('rot', pi / 4)
+            return self.__calculate_axis_rotation_matrix('u1', pi / 4)
         elif name == 'h':
             return self.__H
         elif name == 'swap':
@@ -79,7 +79,7 @@ class QuantumGate():
             return self.__get_controlled_version()
 
     def __calculate_axis_rotation_matrix(self, axis, theta):
-        assert axis in ['rx', 'ry', 'rz', 'rot'], 'Invalid axis choice. Can only be [\'Rx\', \'Ry\', \'Rz\', \'ROT\']'
+        assert axis in ['rx', 'ry', 'rz', 'u1'], 'Invalid axis choice. Can only be [\'Rx\', \'Ry\', \'Rz\', \'U1\']'
         assert np.isreal(theta), 'Theta can not be complex'
 
         axis = axis[-1]

@@ -1,9 +1,9 @@
 [
   { "gate": "h", "target": [2] }, 
-  { "gate": "crot", "params": { "theta":  -1.57079632679}, "target": [1,2] },
-  { "gate": "crot", "params": { "theta":  -0.78539816339}, "target": [0,2] },
+  { "gate": "cu1", "params": { "theta":  -1.57079632679}, "target": [1,2] },
+  { "gate": "cu1", "params": { "theta":  -0.78539816339}, "target": [0,2] },
   { "gate": "h", "target": [1] }, 
-  { "gate": "crot", "params": { "theta":  -1.57079632679}, "target": [0,1] },
+  { "gate": "cu1", "params": { "theta":  -1.57079632679}, "target": [0,1] },
   { "gate": "h", "target": [0] },
   { "gate": "swap", "target": [0, 2] }
 ]

@@ -7,7 +7,7 @@ u3 = """gate u3(theta,phi,lambda) q { U(theta,phi,lambda) q; }\n"""
 
 u2 = """gate u2(phi,lambda) q { U(pi/2,phi,lambda) q; }\n"""
 
-rot = """gate u1(lambda) q { U(0,0,lambda) q; }\n"""
+u1 = """gate u1(lambda) q { U(0,0,lambda) q; }\n"""
 
 ######################################
 
@@ -77,7 +77,7 @@ cs = """gate cs a,b{
     cu1(pi/2) a,b;
 }"""
 
-crot = """
+cu1 = """
 gate cu1(lambda) a,b
 {
 u1(lambda/2) a;
@@ -108,8 +108,7 @@ cx a,b;
 }"""
 ################################################
 
-header = """OPENQASM 2.0;
-include "qelib1.inc";"""
+header = """OPENQASM 2.0;"""
 
 dependency_graph = {
     'swap': ['cx'],
@@ -117,7 +116,9 @@ dependency_graph = {
     'cy': ['s', 'sdg'],
     'cz': ['h'],
     'crx': ['cu3'],
-    'ccx': ['h', 't', 'tdg']
+    'ccx': ['h', 't', 'tdg'],
+    'ct': ['cu1'],
+    'cs': ['cu1']
 }
 
 dependency_graph = defaultdict(lambda: [], dependency_graph)
@@ -130,7 +131,7 @@ def list_to_qasm(list, circuit_size, filename: str, qubits_to_measure=None):
 
     file.write(header + '\n')
 
-    prims = ['identity', 'rot', 'u2', 'u3', 'cx']
+    prims = ['identity', 'u1', 'u2', 'u3', 'cx']
     added_deps = set()
 
     for prim in prims:
@@ -151,21 +152,22 @@ def list_to_qasm(list, circuit_size, filename: str, qubits_to_measure=None):
         # Add it to ops (with params if present)
         params = '' if gate.params is None else '({})'.format(','.join(map(lambda x: str(x), gate.params)))
         if gate.name.startswith('c') or gate.name == 'swap':
-            ops += '{}{} {};\n'.format(gate.name, params, ','.join(map(lambda x: 'qreq[' + str(x) + ']', qubit_idx)))
+            ops += '{}{} {};\n'.format(gate.name, params, ','.join(map(lambda x: 'q[' + str(x) + ']', qubit_idx)))
         else:
             for qubit in qubit_idx:
                 ops += '{}{} q[{}];\n'.format(gate.name, params, qubit)
 
     if qubits_to_measure is not None:
         for idx, qubit in enumerate(qubits_to_measure):
-            ops += 'measure q[{}] -> c[{}];;\n'.format(qubit, idx)
+            ops += 'measure q[{}] -> c[{}];\n'.format(qubit, idx)
 
     file.write(ops)
 
     file.close()
 
-def add_dependencies(gate_name, added_deps, file):
+def add_dependencies(gate_name, added_deps: set, file):
     for dep in dependency_graph[gate_name]:
         if dep not in added_deps:
             add_dependencies(dep, added_deps, file)
             file.write(globals()[dep] + '\n')
+            added_deps.add(dep)
