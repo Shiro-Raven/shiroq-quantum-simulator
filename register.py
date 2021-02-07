@@ -113,6 +113,10 @@ class QuantumRegister():
     def store_as_qasm(self, filename=datetime.now().strftime("%d/%m/%Y-%H:%M:%S"), qubits_to_measure=None):
         assert all([target < self.__size for target in qubits_to_measure]) \
             if qubits_to_measure is not None else True, 'Some qubits not in register'
+
+        if qubits_to_measure is not None: 
+            qubits_to_measure = [self.__appropriate_index(qubit) for qubit in qubits_to_measure]
+
         list_to_qasm(self.__operations, self.__size, filename, qubits_to_measure)
         return
 

@@ -9,8 +9,9 @@ This is a simple quantum computer simulator implemented in Python as the screeni
 
 ## Features
 - Support for most common single-qubit quantum gates, as well as the Toffoli and Swap gates, along with their controlled versions.
-- Support for the parametric R<sub>x</sub>, R<sub>y</sub>, R<sub>z</sub>, and U<sub>3</sub>.
+- Support for the parametric R<sub>x</sub>, R<sub>y</sub>, R<sub>z</sub>,  U<sub>1</sub>, and U<sub>3</sub> gates.
 - Ability to run variational quantum algorithms.
+- OpenQASM translator to run your circuits on other frameworks and real hardware (or even apply some [ZX-calculus magic](https://github.com/Quantomatic/pyzx)).
 
 Examples can be found in the __notebooks__ folder.
 
@@ -51,13 +52,18 @@ The simulator consists of the following components:
     results_dict = example_reg.measure(1000) # Implicit measurement of all qubits
     first_qubit_dict = example_reg.measure(1000, [0]) # Explicit choice of qubits
     ```
+    6. If you wish to transform the added gates to a QASM file, simply call the translator's function. Note that measurement operators need to be explicitly passed to the translator as indices of the qubits to be measured.
+    ```python
+    example_reg.store_as_qasm('sample_filename', [0 ,1, 2])
+    ```
     
 - Automated Circuit Building
     1. Instead of manually adding gates, one can parse a list of dictionaries containing the configurations of the different gates of the circuit. First, inintialise the circuit similar to steps 1 and 2 above. Then, the list has to be passed to ```parse_program``` function in ```utils.py```. The path to a file containing the list can also be used.
     ```python
     circuit_conf = [
   { "gate": "h", "target": [0] }, 
-  { "gate": "cx", "target": [0, 1] }
+  { "gate": "cx", "target": [0, 1] },
+  { "gate": "u1", "params" : {"theta": 3.14159265}, "target": [0, 1] },
     ]
     
     parsed_program = parser.parse_program(circuit_conf)
