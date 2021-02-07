@@ -8,8 +8,10 @@ except ModuleNotFoundError:
     
 from gate import QuantumGate
 import utils
+from openqasm import list_to_qasm
 
 import math
+from datetime import datetime
 import warnings
 
 class QuantumRegister():
@@ -31,6 +33,9 @@ class QuantumRegister():
         self.reset()
 
     def reset(self):
+        # operations list
+        self.__operations = list()
+
         # Needed for efficiency purposes
         self.__dirty = True
         self.__unapplied_gates = False
@@ -104,8 +109,15 @@ class QuantumRegister():
 
         return self.__statevector
 
+
+    def store_as_qasm(self, filename=datetime.now().strftime("%d/%m/%Y-%H:%M:%S")):
+        list_to_qasm(self.__operations, self.__size, filename)
+        return
+
     def add_gate(self, gate, targets):
         self.__do_assertions(gate, targets)
+
+        self.__operations.append((gate, targets))
 
         # First, retrieve the matrix from the Gate object and correct the indexing
         gate = gate.get_matrix()
