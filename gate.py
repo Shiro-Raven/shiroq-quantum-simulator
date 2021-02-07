@@ -18,6 +18,8 @@ class QuantumGate():
     __H = 1 / np.sqrt(2) * np.array([[1., 1.], [1., -1.]], dtype='complex')
     __SWAP = np.array([[1,0,0,0], [0,0,1,0], [0,1,0,0], [0,0,0,1]], dtype='complex')
 
+    single_parameter_gates = ['rx', 'ry', 'rz', 'u1']
+
     def __init__(self, *inp):
         assert len(inp) in [1, 2, 4], 'Invalid parameter length. Either pass the gate name, axis and the rotation parameters, or U3 and the angles'
 
@@ -79,7 +81,7 @@ class QuantumGate():
             return self.__get_controlled_version()
 
     def __calculate_axis_rotation_matrix(self, axis, theta):
-        assert axis in ['rx', 'ry', 'rz', 'u1'], 'Invalid axis choice. Can only be [\'Rx\', \'Ry\', \'Rz\', \'U1\']'
+        assert axis in self.single_parameter_gates, 'Invalid axis choice. Can only be [\'Rx\', \'Ry\', \'Rz\', \'U1\']'
         assert np.isreal(theta), 'Theta can not be complex'
 
         axis = axis[-1]

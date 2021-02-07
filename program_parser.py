@@ -1,3 +1,5 @@
+from gate import QuantumGate
+
 def parse_program(program):
     if isinstance(program, str):
         # Open the file containing the program
@@ -25,7 +27,7 @@ def parse_list(program_list):
         else:
             tmp = instruction['gate']
 
-        if tmp.lower() in ['rx', 'ry', 'rz', 'u1']:
+        if tmp.lower() in QuantumGate.single_parameter_gates:
             instr_params.append(instruction['params']['theta'])
         elif tmp.lower() == 'u3':
             instr_params.append(instruction['params']['theta'])

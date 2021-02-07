@@ -4,7 +4,7 @@ except ModuleNotFoundError:
     try:
         import numpy as np
     except ModuleNotFoundError:
-        print('Neither Cupy nor NumPy are installed')
+        print('Neither CuPy nor NumPy are installed')
 
 import matplotlib.pyplot as plt
 
