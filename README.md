@@ -23,6 +23,7 @@ The simulator consists of the following components:
 - ``gate.py``: This file is responsible for creating reusable instances of all supported gates that can be added to your quantum register, using the ``QuantumGate`` class. 
 - ``program_parser.py``: This file contains the logic for parsing a program as detailed in the explanation of the task, and compiling the parameters needed for runnning that program in our ``QuantumRegister``.
 - ``utils.py``: This file contains some helper functions for calculating tensor products, reordering the wiring of a quantum gate, and creating an arbitrary state from Bloch sphere angles with a global phase, and plotting counts.
+- ``openqasm.py``: This file contains the translation to OpenQASM logic.
 
 ## Usage
 - Manual Circuit Building
