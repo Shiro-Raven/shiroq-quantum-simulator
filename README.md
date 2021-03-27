@@ -1,5 +1,5 @@
 # :boom: ShiroQ Quantum Computer Simulator :cyclone:
-This is a simple quantum computer simulator implemented in Python as the screening task for [QOSF](https://qosf.org/)'s Quantum Computing Mentorship Program.
+This is a simple quantum computer simulator implemented in Python as the screening task for [QOSF](https://qosf.org/)'s Quantum Computing Mentorship Program. This submission was officially chosen by one of the mentors and I am one of the Winter 2020 cohort mentees. 😄
 
 ## Pre-requisites
 - [NumPy](https://numpy.org/)
@@ -42,7 +42,7 @@ The simulator consists of the following components:
     controlled_u3 = QuantumGate('cu3', 3.1415, 0, -1.5707)
     example_reg.add_gate(x_gate, [0,1,2])
     example_reg.add_gate(controlled_z, [0, 4])
-    example_reg.add_gate(controlled_u3, [0])
+    example_reg.add_gate(controlled_u3, [3, 0])
     ```
     4. Adding gates to the circuit does not automatically apply them to the current state of the system. For this, you need to call the ```apply``` function simply as follows:
     ```python
