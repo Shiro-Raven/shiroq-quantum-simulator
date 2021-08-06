@@ -51,7 +51,7 @@ cx = """gate cx c,t { CX c,t; }"""
 
 cy = """gate cy a,b { sdg b; cx a,b; s b; }"""
 
-cz = """gate cz a,b { h b; cx a,b; h b; }""" 
+cz = """gate cz a,b { h b; cx a,b; h b; }"""
 
 crx = """gate crx(theta) a,b{
     cu3(theta, -pi/2, pi/2) a,b;
@@ -111,63 +111,73 @@ cx a,b;
 header = """OPENQASM 2.0;"""
 
 dependency_graph = {
-    'swap': ['cx'],
-    'cswap': ['cx', 'ccx'],
-    'cy': ['s', 'sdg'],
-    'cz': ['h'],
-    'crx': ['cu3'],
-    'ccx': ['h', 't', 'tdg'],
-    'ct': ['cu1'],
-    'cs': ['cu1']
+    "swap": ["cx"],
+    "cswap": ["cx", "ccx"],
+    "cy": ["s", "sdg"],
+    "cz": ["h"],
+    "crx": ["cu3"],
+    "ccx": ["h", "t", "tdg"],
+    "ct": ["cu1"],
+    "cs": ["cu1"],
 }
 
 dependency_graph = defaultdict(lambda: [], dependency_graph)
 
-def list_to_qasm(list, circuit_size, filename: str, qubits_to_measure=None):
-    if filename.endswith('.qasm'):
-        filename = filename[:-len('.qasm')]
 
-    file = open(filename + '.qasm', 'w')
+def _list_to_qasm(list, circuit_size, filename: str, qubits_to_measure=None):
+    if filename.endswith(".qasm"):
+        filename = filename[: -len(".qasm")]
 
-    file.write(header + '\n')
+    file = open(filename + ".qasm", "w")
 
-    prims = ['identity', 'u1', 'u2', 'u3', 'cx']
+    file.write(header + "\n")
+
+    prims = ["identity", "u1", "u2", "u3", "cx"]
     added_deps = set()
 
     for prim in prims:
-        file.write(globals()[prim] + '\n')
+        file.write(globals()[prim] + "\n")
         added_deps.add(prim)
 
-    ops = 'qreg q[{}];\n'.format(circuit_size)
+    ops = "qreg q[{}];\n".format(circuit_size)
 
     if qubits_to_measure is not None:
-        ops += 'creg c[{}];\n'.format(len(qubits_to_measure))
+        ops += "creg c[{}];\n".format(len(qubits_to_measure))
 
     for gate, qubit_idx in list:
-        add_dependencies(gate.name, added_deps, file)
+        _add_dependencies(gate.name, added_deps, file)
         if gate.name not in added_deps:
             added_deps.add(gate.name)
-            file.write(globals()[gate.name] + '\n')
+            file.write(globals()[gate.name] + "\n")
 
         # Add it to ops (with params if present)
-        params = '' if gate.params is None else '({})'.format(','.join(map(lambda x: str(x), gate.params)))
-        if gate.name.startswith('c') or gate.name == 'swap':
-            ops += '{}{} {};\n'.format(gate.name, params, ','.join(map(lambda x: 'q[' + str(x) + ']', qubit_idx)))
+        params = (
+            ""
+            if gate.params is None
+            else "({})".format(",".join(map(lambda x: str(x), gate.params)))
+        )
+        if gate.name.startswith("c") or gate.name == "swap":
+            ops += "{}{} {};\n".format(
+                gate.name,
+                params,
+                ",".join(map(lambda x: "q[" + str(x) + "]", qubit_idx)),
+            )
         else:
             for qubit in qubit_idx:
-                ops += '{}{} q[{}];\n'.format(gate.name, params, qubit)
+                ops += "{}{} q[{}];\n".format(gate.name, params, qubit)
 
     if qubits_to_measure is not None:
         for idx, qubit in enumerate(qubits_to_measure):
-            ops += 'measure q[{}] -> c[{}];\n'.format(qubit, idx)
+            ops += "measure q[{}] -> c[{}];\n".format(qubit, idx)
 
     file.write(ops)
 
     file.close()
 
-def add_dependencies(gate_name, added_deps: set, file):
+
+def _add_dependencies(gate_name, added_deps: set, file):
     for dep in dependency_graph[gate_name]:
         if dep not in added_deps:
-            add_dependencies(dep, added_deps, file)
-            file.write(globals()[dep] + '\n')
+            _add_dependencies(dep, added_deps, file)
+            file.write(globals()[dep] + "\n")
             added_deps.add(dep)

@@ -4,34 +4,41 @@ except ModuleNotFoundError:
     try:
         import numpy as np
     except ModuleNotFoundError:
-        print('Neither CuPy nor NumPy are installed')
+        print("Neither CuPy nor NumPy are installed")
 
 import matplotlib.pyplot as plt
 
+
 def create_state(psi, phi, theta):
     """
-    This function creates an arbitrary state by taking in 
+    This function creates an arbitrary state by taking in
     the parameters of the Bloch sphere (theta, phi) along with the global phase (psi)
     """
-    phase = np.exp(psi*1.j)
+    phase = np.exp(psi * 1.0j)
 
     cos = np.cos(theta / 2)
     sin = np.sin(theta / 2)
 
-    active_phase = np.exp(phi*1.j)
+    active_phase = np.exp(phi * 1.0j)
 
     return phase * np.array([cos, active_phase * sin])
 
+
 def tensor_product_vector_list(vector_list):
     if len(vector_list) > 1:
-        tmp = (vector_list[0][:, None] * vector_list[1][None, :]).reshape(4,)
+        tmp = (vector_list[0][:, None] * vector_list[1][None, :]).reshape(
+            4,
+        )
 
         for i in range(2, len(vector_list)):
-            tmp = (tmp[:, None] * vector_list[i][None, :]).reshape(2 ** (i + 1),)
+            tmp = (tmp[:, None] * vector_list[i][None, :]).reshape(
+                2 ** (i + 1),
+            )
     else:
         tmp = vector_list[0]
-    
-    return tmp 
+
+    return tmp
+
 
 def tensor_product_matrix_list(matrix_list):
     if len(matrix_list) == 1:
@@ -40,13 +47,14 @@ def tensor_product_matrix_list(matrix_list):
         tmp = np.kron(matrix_list[0], matrix_list[1])
 
         for i in range(2, len(matrix_list)):
-                tmp = np.kron(tmp, matrix_list[i])
-    
+            tmp = np.kron(tmp, matrix_list[i])
+
     return tmp
+
 
 def reorder_gate(G, circuit_length, is_big_endian, *new_targets):
     """
-    This function reorders a multiqubit gate by starting with a normal up-to-down gate 
+    This function reorders a multiqubit gate by starting with a normal up-to-down gate
     and permuting its elements based on the order of the indices in new targets
     """
 
@@ -60,7 +68,7 @@ def reorder_gate(G, circuit_length, is_big_endian, *new_targets):
             idx = target
         else:
             idx = circuit_length - target - 1
-        
+
         perm[idx] = counter
         counter += 1
 
@@ -72,12 +80,16 @@ def reorder_gate(G, circuit_length, is_big_endian, *new_targets):
 
     # reorder both input and output dimensions
     perm2 = perm + [circuit_length + i for i in perm]
-    
+
     # Do the actual permutation
-    return np.reshape(np.transpose(np.reshape(G, 2*circuit_length*[2]), perm2), (2**circuit_length, 2**circuit_length))
+    return np.reshape(
+        np.transpose(np.reshape(G, 2 * circuit_length * [2]), perm2),
+        (2 ** circuit_length, 2 ** circuit_length),
+    )
+
 
 def plot_counts(counts):
-    assert isinstance(counts, dict), 'Must be a dict of counts!'
-    assert len(counts.keys()) > 0, 'Dict is empty!'
+    assert isinstance(counts, dict), "Must be a dict of counts!"
+    assert len(counts.keys()) > 0, "Dict is empty!"
 
-    plt.bar(counts.keys(), counts.values(), 0.75, color='g')
+    plt.bar(counts.keys(), counts.values(), 0.75, color="g")
