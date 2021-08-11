@@ -1,4 +1,4 @@
-from gate import QuantumGate
+from .gate import QuantumGate
 
 
 def parse_program(program):
